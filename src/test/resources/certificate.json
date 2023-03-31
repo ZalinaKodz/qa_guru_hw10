@@ -1,0 +1,11 @@
+[
+  {
+    "userId": "Vano",
+    "jobTitle": "Developer",
+    "firstName": "Ivan",
+    "lastName": "Ivanov",
+    "employeeCode": "E1",
+    "phoneNumber": "123456",
+    "access": ["Web", "Mobile"]
+  }
+]
