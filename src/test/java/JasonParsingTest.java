@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 public class JasonParsingTest {
-    private  ClassLoader cl = FileParsingAndReadingTest.class.getClassLoader();
+    private ClassLoader cl = JasonParsingTest.class.getClassLoader();
 
     @Test
     void testJsonParsing() throws Exception {

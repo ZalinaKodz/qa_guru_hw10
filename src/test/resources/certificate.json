@@ -1,5 +1,4 @@
-[
-  {
+{
     "userId": "Vano",
     "jobTitle": "Developer",
     "firstName": "Ivan",
@@ -7,5 +6,4 @@
     "employeeCode": "E1",
     "phoneNumber": "123456",
     "access": ["Web", "Mobile"]
-  }
-]
+}
