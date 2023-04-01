@@ -3,7 +3,9 @@ import com.codeborne.xlstest.XLS;
 import com.opencsv.CSVReader;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.InvalidArgumentException;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
@@ -14,51 +16,44 @@ public class FileParsingAndReadingTest {
 
     private ClassLoader cl = FileParsingAndReadingTest.class.getClassLoader();
 
+
+    private ZipInputStream getStreamFromArchive(String filename) throws IOException {
+        ZipEntry entry;
+        ZipInputStream zis;
+        InputStream is = cl.getResourceAsStream("file-examples.zip");
+        assert is != null;
+        zis = new ZipInputStream(is);
+        while ((entry = zis.getNextEntry()) != null) {
+            if (entry.getName().endsWith(filename)) return zis;
+        }
+        is.close();
+        zis.close();
+        throw new InvalidArgumentException("ERROR");
+    }
+
+
     @Test
     void zipPdfTest() throws Exception {
-        try (InputStream zipFile = cl.getResourceAsStream("file-examples.zip");
-             ZipInputStream zm = new ZipInputStream(zipFile)) {
-            ZipEntry entry;
-            while ((entry = zm.getNextEntry()) != null) {
-                if (entry.getName().contains(".pdf")) {
-                    PDF pdf = new PDF(zm);
-                    Assertions.assertTrue(entry.getName().contains("file-example_PDF_500_kB.pdf"));
+        try (InputStream inputStream = getStreamFromArchive(".pdf")) {
+                    PDF pdf = new PDF(inputStream);
                     Assertions.assertTrue(pdf.text.startsWith("Lorem ipsum"));
                 }
             }
-        }
-    }
 
     @Test
     void zipXlsxTest() throws Exception {
-        try (InputStream zipFile = cl.getResourceAsStream("file-examples.zip");
-             ZipInputStream filesFromZip = new ZipInputStream(zipFile)) {
-            ZipEntry entry;
-            while ((entry = filesFromZip.getNextEntry()) != null) {
-                if (entry.getName().contains(".xlsx")) {
-                    XLS xls = new XLS(filesFromZip);
-                    Assertions.assertTrue(entry.getName().contains("file_example_XLS_50.xls"));
-                    Assertions.assertEquals(xls.excel.getSheetAt(0).getRow(15).getCell(16)
-                            .getStringCellValue(), "Great Britain");
-                }
-            }
+        try (InputStream inputStream = getStreamFromArchive(".xls")) {
+            XLS xls = new XLS(inputStream);
+            Assertions.assertEquals(xls.excel.getSheetAt(0).getRow(2).getCell(4)
+                    .getStringCellValue(), "Great Britain");
         }
     }
-
     @Test
     void zipCsvTest() throws Exception {
-        try (InputStream zipFile = cl.getResourceAsStream("file-examples.zip");
-             ZipInputStream zm = new ZipInputStream(zipFile)) {
-            ZipEntry entry;
-            while ((entry = zm.getNextEntry()) != null) {
-                if (entry.getName().contains(".csv")) {
-                    CSVReader csvReader = new CSVReader(new InputStreamReader(zm));
-                    List<String[]> csvRow = csvReader.readAll();
-                    Assertions.assertTrue(entry.getName().contains("file_example_CSV_5000.csv"));
-                    Assertions.assertArrayEquals(new String[]{"2", "Mara", "Hashimoto", "Female", "Great Britain", "25", "16/08/2016", "1582"}, csvRow.get(2));
-                }
-            }
-
+         try (InputStream inputStream = getStreamFromArchive(".csv")) {
+            CSVReader csvReader = new CSVReader(new InputStreamReader(inputStream));
+            List<String[]> content = csvReader.readAll();
+                    Assertions.assertArrayEquals(new String[]{"2", "Mara", "Hashimoto", "Female", "Great Britain", "25", "16/08/2016", "1582"}, content.get(2));
         }
     }
 }
